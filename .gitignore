@@ -1,3 +1,8 @@
 maps/venv/
 deep_research/venv/
 autonomous_agent/venv/
+cli/venv/
+cli/.env
+cli/key.env
+cli/__pycache__/
+
