@@ -269,6 +269,7 @@ python-json-logger==3.3.0
 python-magic==0.4.27
 python-multipart==0.0.20
 python-oxmsg==0.0.2
+python-pptx==1.0.2
 pytweening==1.2.0
 pytz==2025.2
 pywin32==310
@@ -365,6 +366,7 @@ wikipedia==1.4.0
 wrapt==1.17.2
 wsproto==1.2.0
 xlrd==0.7.1
+xlsxwriter==3.2.5
 xlwt==0.7.2
 xxhash==3.5.0
 yarl==1.20.1

@@ -1,9 +1,13 @@
 import pyautogui
-from gemini import get_coordinates,get_coordinates_of_textbox,select_best_placeholder,gen_pandas_df
+from gemini import get_rgb,extract_content,get_coordinates,get_coordinates_of_textbox,select_best_placeholder,gen_pandas_df,gen_presentation,extract_color_params
 import re
 import os
 from reportlab.pdfgen import canvas
 from docx import Document
+from pptx import Presentation
+from presentation import create_slide
+from gemini import extract_color_params
+
 def type_and_save(info):
     pyautogui.write(info,interval=0.1)
     pyautogui.hotkey('ctrl','s')
@@ -45,3 +49,21 @@ def write_to_excel(path,content):
     df = gen_pandas_df(content)
     df.to_excel(path,index=False)
     os.startfile('output.xlsx')
+
+def create_pptx(topic:str,path:str):
+    topic = extract_content(topic)
+    data_dict = gen_presentation(topic)
+    color = extract_color_params(topic)
+    color = color.split(',')
+    bg_color,title_color,content_color = color[0],color[1],color[2]
+    bg_color,title_color,content_color = get_rgb(bg_color),get_rgb(title_color),get_rgb(content_color)
+    slides = data_dict['slides']
+    n_slides = len(slides)
+    ppt = Presentation()
+
+    for i in range(n_slides):
+        create_slide(slides[i]['slide_title'],slides[i]['bullet_points'],ppt,title_color,bg_color,content_color)
+    
+    ppt.save(path)
+    os.startfile(path)
+#create_pptx('Generate a presentation on the topic AI Agents with background colour as black and the content of the color white')

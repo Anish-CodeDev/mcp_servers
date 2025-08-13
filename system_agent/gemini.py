@@ -4,6 +4,8 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 from PIL import Image
+import re
+import base64
 load_dotenv()
 
 client = genai.Client()
@@ -205,3 +207,95 @@ def gen_pandas_df(content):
     
     df = pd.DataFrame(res['data'])
     return df
+def gen_presentation(topic:str):
+    res = client.models.generate_content(
+        model='gemini-2.5-flash-lite',
+        contents=[
+   f"""         You are an expert presentation creator. 
+            Given a topic, generate a structured presentation outline suitable for PowerPoint or Google Slides.
+
+            For the given topic:
+            1. Provide a title slide with a main title, subtitle, and a suggestion for a visual.
+            2. Create 8-10 additional slides.
+            3. For each slide, include:
+            - A short, clear slide title
+            - 3-5 concise bullet points (presentation-friendly wording)
+            - A suggestion for an appropriate visual or diagram
+            4. Keep bullet points short and impactful, avoiding long sentences.
+            5. Ensure the slides follow a logical flow, starting with an introduction and ending with a conclusion.
+            6. The final response must be in the form of json, specify the title under the key title,slide title under the key slide_title, bullet points under the key bullet_points and visual suggestions under the key visual_suggestion
+            7. Don't use any triple backticks in the final response
+            Topic: {topic}
+            """
+
+        ]
+    )
+    res = re.sub('json','',res.text)
+    
+    res = eval(res)
+    #print(res['slides'])
+    print(res['slides'][0]['bullet_points'])
+    return res
+
+def generate_image(topic:str):
+    res = client.models.generate_images(
+        model='imagen-4.0-generate-preview-06-06',
+        prompt=topic,
+        config=types.GenerateImagesConfig(number_of_images=1)
+    )
+    for img in res.generated_images:
+        img_encoded = base64.b64decode(img.image.base64_data)
+
+        with open('test.png',"wb") as f:
+            f.write(img_encoded)
+
+        print('Success')
+
+def get_rgb(color:str):
+    res  = client.models.generate_content(
+        model='gemini-2.5-flash-lite',
+        contents=[
+            f"""
+            Get the RGB format for the colour enclosed using triple backticks
+            ```{color}```
+            Just return the response as a list and don't return any irrelevant text
+            """
+        ]
+    )
+    res = eval(res.text)
+    print(res)
+    return res
+
+
+def extract_color_params(message):
+    res = client.models.generate_content(
+        model='gemini-2.5-flash-lite',
+        contents=[
+            f"""
+            Extract the color of the background,slide title,content from {message}
+
+            The final response must be a string, each of the results of the above params must be seperated by commas
+            If not specified by the user, consider the content color and title color to be the same
+            The response must be in lowercase
+            """
+        ]
+    )
+    print(res.text)
+    return res.text
+def extract_content(message):
+    res = client.models.generate_content(
+        model='gemini-2.5-flash-lite',
+        contents=[
+            f"""
+            Extract the topic from the message: {message}, return only the extracted topic
+            """
+        ]
+
+    )
+    print(res.text)
+    return res.text
+#extract_content('Generate a presentation of the topic AI Agents,the background must be in black, the text must be in white')
+#extract_color_params('Generated a presentation on the topic AI Agents, the background must be in black, the text must be in white')
+#generate_image('Applications of AI')
+#for model in client.models.list():
+#    print(model.name)

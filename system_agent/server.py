@@ -18,6 +18,7 @@ mcp = FastMCP('cli')
 def run_command_wrt_file(operator:str,filename:str):
     """
     This tool is used when the user wants to run a specific command with a specific file name or a specific instruction
+    Don't use this tool when the user want to generate/create a presentation
     ARGS: operator, filename
     """
     print(operator + filename)
@@ -309,7 +310,7 @@ def create_file(path):
 @mcp.tool()
 def create_file_with_content(path,content):
     """
-    This tool is used when the user wants to create a document(can be a spreadsheet or .xlsx file) of a particular type along with some content
+    This tool is used when the user wants to create a presentation or document(can be a spreadsheet or .xlsx file or a presentation) of a particular type along with some content
     ARGS: path,content
     """
     try:
@@ -323,6 +324,9 @@ def create_file_with_content(path,content):
         
         elif path.endswith('.xlsx'):
             write_to_excel(path,content)
+        
+        elif path.endswith('.pptx'):
+            app_auto.create_pptx(f"Generate presentation {content}",path)
         else:
 
             return "An error occurred"
