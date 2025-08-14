@@ -330,10 +330,9 @@ def create_file_with_content(path,content):
         else:
 
             return "An error occurred"
-        os.startfile(path)
     
     except Exception as e:
         return f"An error occurred because: {str(e)}"
 
-    return "Done"
+    return f"The file has been saved at: {path}"
 mcp.run(transport='stdio')

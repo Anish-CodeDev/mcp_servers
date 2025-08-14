@@ -1,12 +1,12 @@
 import pyautogui
-from gemini import get_rgb,extract_content,get_coordinates,get_coordinates_of_textbox,select_best_placeholder,gen_pandas_df,gen_presentation,extract_color_params
+from gemini import get_rgb,extract_content,get_coordinates,get_coordinates_of_textbox,select_best_placeholder,gen_pandas_df,gen_presentation,extract_color_params,generate_content_for_text_file
 import re
 import os
-from reportlab.pdfgen import canvas
 from docx import Document
 from pptx import Presentation
 from presentation import create_slide
 from gemini import extract_color_params
+from docx2pdf import convert
 
 def type_and_save(info):
     pyautogui.write(info,interval=0.1)
@@ -23,19 +23,36 @@ def execute_shortcut(shortcut:str):
     print(keys)
     pyautogui.hotkey(keys[0].lower(),keys[1].lower())
 
-def create_file_in_application(doc_type:str,filename,content):
-    if doc_type == 'docx':
+def save_to_doc(filename,content):
+        content = generate_content_for_text_file(content)
+        title = content['title']
         doc = Document()
+        doc.add_paragraph(title,style='Title')
+        for s in content['sections']:
+            try:
 
-        doc.add_heading(content,level=1)
+                doc.add_heading(s['heading'],level=1)
+                try:
+                    doc.add_paragraph(s['content'])
+                
+                except:
+                    pass
+                subsections = s['subsections']
+                for s_s in subsections:
+                    doc.add_heading(s_s['subheading'],level=2)
+                    doc.add_paragraph(s_s['content'])
+            except:
+                pass
         doc.save(filename)
+def create_file_in_application(doc_type:str,filename,content):
+
+    if doc_type == 'docx':
+        save_to_doc(filename,content)
     
 
     elif doc_type == 'pdf':
-        c = canvas.Canvas(filename)
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(100,750,content)
-        c.save()
+        save_to_doc(filename.split('.')[0] + '.docx',content)
+        convert(filename.split('.')[0] + '.docx',filename)
 
 def type_in_textbox(task:str,data:str):
     pyautogui.screenshot('screenshots/screenshot.jpg')
@@ -65,5 +82,3 @@ def create_pptx(topic:str,path:str):
         create_slide(slides[i]['slide_title'],slides[i]['bullet_points'],ppt,title_color,bg_color,content_color)
     
     ppt.save(path)
-    os.startfile(path)
-#create_pptx('Generate a presentation on the topic AI Agents with background colour as black and the content of the color white')

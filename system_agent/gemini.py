@@ -294,8 +294,35 @@ def extract_content(message):
     )
     print(res.text)
     return res.text
-#extract_content('Generate a presentation of the topic AI Agents,the background must be in black, the text must be in white')
-#extract_color_params('Generated a presentation on the topic AI Agents, the background must be in black, the text must be in white')
-#generate_image('Applications of AI')
-#for model in client.models.list():
-#    print(model.name)
+
+def generate_content_for_text_file(topic:str):
+    res = client.models.generate_content(
+        model='gemini-2.5-flash-lite',
+        contents=[
+           f"""
+            Generate well-structured content for a Word document based on the topic: "{topic}".
+
+            Requirements:
+            1. Include a clear title at the top.
+            2. Organize content into sections with headings and subheadings.
+            3. Use short paragraphs for readability.
+            4. Ensure factual accuracy and relevance to the topic.
+            5. Avoid any code, formatting symbols, or non-content text.
+            6. Output only the document text — no explanations.
+            7. The title of the document must be under the key title
+            8. The headings of the documents be under the key heading, all the headings must be under the key sections the heading and title must not be same, there might be several headings with several subsections
+            9. Then create a new array under the key subsections
+            10. The elements of the array are dictionaries with the keys subheading and content
+            The output will be directly saved into a Word file.
+
+            The final response must be in the form of json without any triple backticks, seperating the content from the headers.
+            
+            
+            """
+        ]
+    )
+    print(res.text)
+    res = re.sub('json','',res.text)
+    return eval(res)
+
+#generate_content_for_text_file("World Models in the field of AI")
